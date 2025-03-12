@@ -229,51 +229,70 @@ int getValidIntInput(string prompt) {
 
 // Function to add an employee
 void addEmployee(vector<Employee *> &employees, int type) {
-    string ID, name;
-    double salary;
-    int hours, projects;
-
-    // Validate employee ID
+    char choice;
+    
     do {
-        cout << "Enter Employee ID (letters and numbers only): ";
-        cin >> ID;
+        string ID, name;
+        double salary;
+        int hours, projects;
 
-        if (!isValidID(ID)) {
-            cout << RED <<"Invalid ID! The ID should only contain letters and numbers.\n"<< RESET;
-        } else if (!isUniqueID(ID, employees)) {
-            cout << RED << "Duplicate ID! Enter a unique ID.\n" << RESET;
+        // Validate employee ID
+        do {
+            cout << "Enter Employee ID (letters and numbers only): ";
+            cin >> ID;
+
+            if (!isValidID(ID)) {
+                cout << RED << "Invalid ID! The ID should only contain letters and numbers.\n" << RESET;
+            } else if (!isUniqueID(ID, employees)) {
+                cout << RED << "Duplicate ID! Enter a unique ID.\n" << RESET;
+            }
+
+        } while (!isValidID(ID) || !isUniqueID(ID, employees));
+
+        // Validate employee name
+        cin.ignore();
+        do {
+            cout << "Enter Employee Name (letters only): ";
+            getline(cin, name);
+
+            if (!isValidName(name)) {
+                cout << RED << "Invalid Name! The name should only contain letters and spaces.\n" << RESET;
+            }
+
+        } while (!isValidName(name));
+
+        salary = getValidDoubleInput("Enter Salary: ");
+
+        switch (type) {
+            case 1:
+                employees.push_back(new FullTime(ID, name, salary));
+                break;
+            case 2:
+                hours = getValidIntInput("Enter Hours Worked: ");
+                employees.push_back(new PartTime(ID, name, salary, hours));
+                break;
+            case 3:
+                projects = getValidIntInput("Enter Number of Projects: ");
+                employees.push_back(new Contractual(ID, name, salary, projects));
+                break;
         }
 
-    } while (!isValidID(ID) || !isUniqueID(ID, employees));
+        // Ask user if they want to add another employee of the same type
+        do {
+            cout << "Do you want to add another employee of the same type? (Y/N): ";
+            cin >> choice;
+            choice = toupper(choice);
 
-    // Validate employee name
-    cin.ignore(); 
-    do {
-        cout << "Enter Employee Name (letters only): ";
-        getline(cin, name);
+            if (choice != 'Y' && choice != 'N') {
+                cout << RED << "Invalid input! Please enter 'Y' for Yes or 'N' for No.\n" << RESET;
+            }
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear input buffer
 
-        if (!isValidName(name)) {
-            cout << RED <<"Invalid Name! The name should only contain letters and spaces.\n" << RESET;
-        }
+        } while (choice != 'Y' && choice != 'N');
 
-    } while (!isValidName(name));
-
-    salary = getValidDoubleInput("Enter Salary: ");
-
-    switch (type) {
-    case 1:
-        employees.push_back(new FullTime(ID, name, salary));
-        break;
-    case 2:
-        hours = getValidIntInput("Enter Hours Worked: ");
-        employees.push_back(new PartTime(ID, name, salary, hours));
-        break;
-    case 3:
-        projects = getValidIntInput("Enter Number of Projects: ");
-        employees.push_back(new Contractual(ID, name, salary, projects));
-        break;
-    }
+    } while (choice == 'Y'); // Repeat if the user chooses 'Y'
 }
+	
 
 // Function to display payroll report
 void displayPayroll(const vector<Employee *> &employees) {
